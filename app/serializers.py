@@ -2,53 +2,48 @@
 Serializers for the app
 """
 from rest_framework import serializers
-from .models import Client, Therapist
+from django.contrib.auth.models import User
+from .models import Profile, ClientProfile, TherapistProfile
 
-class ClientSerializer(serializers.ModelSerializer):
-    """
-    serializer for the client model
-    """
+class UserSerializer(serializers.ModelSerializer):
+    # Serializer for the User model to control which fields are included in the API response
     class Meta:
-        """
-        metadata for the model
-        """
-        model = Client
-        fields = ['id', 'name', 'email', 'phone', 'category', 'description', 'condition', 'age']
-
-class TherapistSerializer(serializers.ModelSerializer):
-    """
-    serializer for the therapist model
-    """
-    class Meta:
-        """
-        metadata for the model
-        """
-        model = Therapist
-        fields = ['id', 'name', 'email', 'phone', 'category', 'description', 'client', 'experience', 'price', 'qualification', 'location']
-
-
-class ClientSignupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Client
-        fields = '__all__'
-        extra_kwargs = {
-            'password1': {'write_only': True},
-            'password2': {'write_only': True}
-        }
-
+        model = User
+        fields = ['id', 'username', 'email', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
+    
     def create(self, validated_data):
-        client = Client.objects.create(**validated_data)
-        return client
+        user = User.objects.create_user(**validated_data)
+        return user
 
-class TherapistSignupSerializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer()  # Nested serializer to include user data within profile
+    
+
     class Meta:
-        model = Therapist
-        fields = '__all__'
-        extra_kwargs = {
-            'password1': {'write_only': True},
-            'password2': {'write_only': True}
-        }
-
+        model = Profile
+        fields = ['user', 'category']
+    
     def create(self, validated_data):
-        therapist = Therapist.objects.create(**validated_data)
-        return therapist
+        user_data = validated_data.pop('user')
+        user_serializer = UserSerializer(data=user_data)
+        if user_serializer.is_valid():
+            user = user_serializer.save()
+            profile = Profile.objects.create(user=user, **validated_data)
+            return profile
+        return user_serializer.errors
+
+class ClientProfileSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()  # Nested serializer to include profile data within client profile
+
+    class Meta:
+        model = ClientProfile
+        fields = '__all__'
+
+class TherapistProfileSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()  # Nested serializer to include profile data within therapist profile
+
+    class Meta:
+        model = TherapistProfile
+        fields = '__all__'
+
