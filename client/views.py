@@ -1,6 +1,9 @@
-# yourapp/views.py
+"""
+This module contains the views for the client app.
+The endpoints are done using viewsets and actions.
+"""
 from django.urls import reverse
-from rest_framework import viewsets, status, permissions
+from rest_framework import viewsets, status, permissions, authentication
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, get_user_model
@@ -9,20 +12,23 @@ from rest_framework.response import Response
 from django.shortcuts import redirect
 from rest_framework.exceptions import NotFound
 from .models import ClientUser, ClientProfile, TherapistProfile
-from .serializers import ClientUserSerializer, ClientProfileSerializer, TherapistProfileSerializer, LoginSerializer
+from .serializers import ClientUserSerializer, ClientProfileSerializer, TherapistProfileSerializer, LoginSerializer, DeleteProfileSerializer
 
 User = get_user_model()
 
 class LoginViewset(viewsets.GenericViewSet):
     """
     Handles login and potentially retrieves user profile data.
-    """
+    """    
     permission_classes = [permissions.AllowAny]
     serializer_class = LoginSerializer
 
     @action(detail=False, methods=['post'])
     def login(self, request):
-        # Use the serializer to validate the input data
+        """
+        function handles user login
+        """
+        # validation the input data
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -35,19 +41,23 @@ class LoginViewset(viewsets.GenericViewSet):
         if user:
             # Create or get the token for the user
             token, created = Token.objects.get_or_create(user=user)
-            redirect_url = reverse('update-profile')
-            return redirect(redirect_url)
-            # return Response({'token': token.key})
+            # redirect_url = f"{reverse('update_profile')}?token={token.key}"
+            # return redirect(redirect_url)
+            return Response({'token': token.key})
         else:
-            # Return an error response if authentication fails
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-
 class SignUpViewset(viewsets.GenericViewSet):
+    """
+    handles user signups
+    """
     permission_classes = [permissions.AllowAny]
     serializer_class = ClientUserSerializer
 
     def post(self, request):
+        """
+        gets the credentials and logs in the user
+        """
         serializer = ClientUserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -55,23 +65,31 @@ class SignUpViewset(viewsets.GenericViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UpdateProfileViewset(viewsets.GenericViewSet):
+    """
+    This allows users to update their profiles
+    """
+    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_class(self):
-        user = self.request.user
-        
+        """
+        we overide serialiser class to get the correct serializer
+        """
+        user = self.request.user 
         # Determine which profile serializer to use based on user role
-        if user.role == 'CL':  # Assuming 'CL' signifies client role
+        if user.role == 'CL':
             serializer_class = ClientProfileSerializer
-        elif user.role == 'TH':  # Assuming 'THERA' signifies therapist role
+        elif user.role == 'TH':
             serializer_class = TherapistProfileSerializer
         else:
-            # Handle the case where the user role is undefined or unexpected
             raise AssertionError("User role not recognized")
         return serializer_class
     
     @action(detail=False, methods=['post'])
     def update_profile(self, request):
+        """
+        function updates the user details
+        """
         serializer_class = self.get_serializer_class()
 
         # Ensure the user has a profile; create one if it doesn't exist
@@ -87,17 +105,25 @@ class UpdateProfileViewset(viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+        
 
 class ListProfilesViewset(viewsets.GenericViewSet):
+    """
+    a logged in client can view profiles for other users
+    """
+    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        """
+        returns the queryset based on the user role
+        """
         user = self.request.user
 
         if user.role == 'CL':
-            queryset = TherapistProfile.objects.all()  # List all therapist profiles
+            queryset = TherapistProfile.objects.all()
         elif user.role == 'TH':
-            queryset = ClientProfile.objects.all()  # List all client profiles
+            queryset = ClientProfile.objects.all()
         else:
             raise AssertionError("User role not recognized")
 
@@ -105,21 +131,31 @@ class ListProfilesViewset(viewsets.GenericViewSet):
 
     @action(detail=False, methods=['get'])
     def list_profiles(self, request):
+        """
+        function lists all the profiles
+        """
         queryset = self.get_queryset()
         serializer_class = self.get_serializer_class()
         serializer = serializer_class(queryset, many=True)
         return Response(serializer.data)
 
     def get_serializer_class(self):
+        """
+        returns the correct serializer based on the user role
+        """
         user = self.request.user
-        if user.role == 'CL':
+        if user.role == ClientUser.Role.CLIENT:
             return TherapistProfileSerializer
-        elif user.role == 'TH':
+        elif user.role == ClientUser.Role.THERA:
             return ClientProfileSerializer
         else:
             raise NotFound('User role not found')
 
 class DetailListViewset(viewsets.GenericViewSet):
+    """
+    A logged in user can view the details of another user
+    """
+    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -136,6 +172,9 @@ class DetailListViewset(viewsets.GenericViewSet):
 
     @action(detail=True, methods=['get'])
     def detail_list(self, request, pk=None):
+        """
+        function lists the details of a user
+        """
         queryset = self.get_queryset()
         profile = get_object_or_404(queryset, pk=pk)
         serializer_class = self.get_serializer_class()
@@ -143,37 +182,53 @@ class DetailListViewset(viewsets.GenericViewSet):
         return Response(serializer.data)
 
     def get_serializer_class(self):
+        """
+        returns the correct serializer based on the user role
+        """
         user = self.request.user
-        if user.role == 'CL':
+        if user.role == ClientUser.Role.CLIENT:
             return TherapistProfileSerializer
-        elif user.role == 'TH':
+        elif user.role == ClientUser.Role.THERA:
             return ClientProfileSerializer
         else:
             raise NotFound('User role not found')
 
 class DeleteProfileViewset(viewsets.GenericViewSet):
+    """
+    deletes a user and their profile
+    """
+    authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = DeleteProfileSerializer    
+
+    def get_queryset(self):
+        """
+        returns the queryset based on the user role
+        """
+        user = self.request.user
+        if user.role == ClientUser.Role.CLIENT:
+            return ClientProfile.objects.filter(client=user)
+        elif user.role == ClientUser.Role.THERA:
+            return TherapistProfile.objects.filter(therapist=user)
+        else:
+            raise AssertionError("User role not recognized")
 
     @action(detail=False, methods=['delete'])
     def delete_profile(self, request):
+        """
+        function deletes the user and their profile
+        """
         user = self.request.user
-        if user.role == 'CL':
-            profile = get_object_or_404(ClientProfile, client=user)
-            serializer = ClientProfileSerializer(profile)
-        elif user.role == 'TH':
-            profile = get_object_or_404(TherapistProfile, therapist=user)
-            serializer = TherapistProfileSerializer(profile)
-            
+        if user.role == ClientUser.Role.CLIENT:
+            profile = ClientProfile.objects.filter(client=user).first()
+        elif user.role == ClientUser.Role.THERA:
+            profile = TherapistProfile.objects.filter(therapist=user).first()
         else:
-            raise AssertionError("User role not recognized")
-        profile.delete()
-        return Response({'message': 'Profile deleted successfully'})
+            return Response({"detail": "User role not recognized"}, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_serializer_class(self):
-        user = self.request.user
-        if user.role == 'CL':
-            return ClientProfileSerializer
-        elif user.role == 'TH':
-            return TherapistProfileSerializer
+        if profile:
+            profile.delete()
+            user.delete()
+            return Response({"detail": "Profile and user deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         else:
-            raise NotFound('User role not found')
+            return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
