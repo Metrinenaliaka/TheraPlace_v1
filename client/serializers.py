@@ -2,7 +2,7 @@
 This file contains the serializers for the client app
 """
 from rest_framework import serializers
-from .models import ClientUser, ClientProfile, TherapistProfile
+from .models import ClientUser, ClientProfile, TherapistProfile, Appointments
 
 class LoginSerializer(serializers.Serializer):
     """
@@ -11,11 +11,16 @@ class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
 
-class DeleteProfileSerializer(serializers.Serializer):
+class DefaultProfileSerializer(serializers.Serializer):
     """
     This class is a serializer for the delete profile endpoint
     """
     pass
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointments
+        fields = ['id', 'client', 'therapist', 'date', 'time', 'reason']
 
 class ClientUserSerializer(serializers.ModelSerializer):
     """

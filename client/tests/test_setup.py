@@ -62,6 +62,10 @@ class TestProfileSetUp(APITestCase):
         self.fake = Faker()
 
         self.role = self.fake.random_element(elements=('CL', 'TH'))
+        self.condition = self.fake.random_element(elements=('Celebral Palsy', 'Autism', 'Down Syndrome', 'ADHD', 'Hydrocephalus', 'Epilepsy', 'Developmental Delay'))
+        self.occupation = self.fake.random_element(elements=('Psychologist', 'Psychiatrist', 'Counselor', 'Occupational Therapist', 'Social Worker', 'Physiotherapist'))
+        self.location = self.fake.random_elements(elements=('nairobi', 'kakamega', 'kitui'))
+        
 
         self.data = {
             'username': self.fake.user_name(),
@@ -82,17 +86,15 @@ class TestProfileSetUp(APITestCase):
         self.client_data = {
             'age': self.fake.random_int(min=1, max=100),
             'description': self.fake.text(),
-            'condition': self.fake.text()
+            'condition': self.condition
         }
         self.therapist_data = {
             'experience': self.fake.random_int(min=1, max=100),
             'description': self.fake.text(),
-            'occupation': self.fake.text(),
+            'occupation': self.occupation,
             'price': self.fake.random_int(min=1, max=100),
-            'location': self.fake.text()
+            'location': self.location
         }
-
-        self.token, created = Token.objects.get_or_create(user=self.user)
 
         if self.role == 'CL':
             self.client_profile = ClientProfile.objects.create(
