@@ -1,5 +1,4 @@
 # TheraPlace
-============
     *Personalised therapy for you*
 ______
   
@@ -25,7 +24,7 @@ You can check me out on socials:
 ____
 - You can access this project by cloning it using:
 ```
-https://add_your_token@github.com/Metrinenaliaka/TheraPlace_v1.git
+https://github.com/Metrinenaliaka/TheraPlace_v1.git
 ```
 - On your terminal activate the virtual environment using `. ./venv/bin/activate`
 - Then run `python manage.py runserver` to start the server on localhost

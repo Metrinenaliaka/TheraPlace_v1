@@ -1,0 +1,304 @@
+openapi: 3.0.2
+info:
+  title: 'TheraPlace API'
+  version: '1.0.0'
+paths:
+  /api/v1/list-profiles/:
+    get:
+      operationId: list_profilesDefaultProfile
+      description: lists all the profiles of a user if Client it geneates Therapists and viceversa
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties: {}
+          description: 'List contained dicts of the generated users'
+  /api/v1/profile/{id}/:
+    get:
+      operationId: detail_listDefaultProfile
+      description: function lists the details of a user identified by id
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: 'The id of logged in user'
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties: {}
+          description: 'Dict data of the logged in user'
+  /api/v1/login/:
+    post:
+      operationId: loginLogin
+      description: function handles user login
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id001
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                  writeOnly: true
+              required:
+              - username
+              - password
+          application/x-www-form-urlencoded:
+            schema: *id001
+          multipart/form-data:
+            schema: *id001
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  username:
+                    type: string
+                required:
+                - username
+          description: 'The username and password required for login'
+  /api/v1/register/:
+    post:
+      operationId: CreateClientUser
+      description: gets the credentials and registers the user
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id002
+              properties:
+                username:
+                  type: string
+                  description: Required. 150 characters or fewer. Letters, digits
+                    and @/./+/-/_ only.
+                  pattern: ^[\w.@+-]+\Z
+                  maxLength: 150
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                password:
+                  type: string
+                  maxLength: 128
+                role:
+                  enum:
+                  - CL
+                  - TH
+              required:
+              - username
+              - password
+              - role
+          application/x-www-form-urlencoded:
+            schema: *id002
+          multipart/form-data:
+            schema: *id002
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    readOnly: true
+                  username:
+                    type: string
+                    description: Required. 150 characters or fewer. Letters, digits
+                      and @/./+/-/_ only.
+                    pattern: ^[\w.@+-]+\Z
+                    maxLength: 150
+                  email:
+                    type: string
+                    format: email
+                    maxLength: 254
+                  password:
+                    type: string
+                    maxLength: 128
+                  role:
+                    enum:
+                    - CL
+                    - TH
+                required:
+                - username
+                - password
+                - role
+          description: ''
+  /api/v1/update-profile/:
+    post:
+      operationId: update_profileDefaultProfile
+      description: function updates the user details
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id003
+              properties: {}
+          application/x-www-form-urlencoded:
+            schema: *id003
+          multipart/form-data:
+            schema: *id003
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties: {}
+          description: ''
+  /api/v1/approve_app/:
+    post:
+      operationId: respond_to_appointmentTherapistProfile
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id004
+              properties:
+                experience:
+                  type: integer
+                description:
+                  type: string
+                  nullable: true
+                occupation:
+                  enum:
+                  - Occupational Therapist
+                  - Physiotherapist
+                  - Speech Therapist
+                  - Special Education Teacher
+                  - Psychologist
+                  - Psychiatrist
+                  - Counselor
+                  - Social Worker
+                  - ABA Therapist
+                  - Music Therapist
+                  - Art Therapist
+                  - Dance Therapist
+                  - Recreational Therapist
+                  - Nutritionist
+                  - Other
+                price:
+                  type: number
+                  multipleOf: 0.01
+                  maximum: 100000000
+                  minimum: -100000000
+                location:
+                  type: string
+                  maxLength: 100
+          application/x-www-form-urlencoded:
+            schema: *id004
+          multipart/form-data:
+            schema: *id004
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  experience:
+                    type: integer
+                  description:
+                    type: string
+                    nullable: true
+                  occupation:
+                    enum:
+                    - Occupational Therapist
+                    - Physiotherapist
+                    - Speech Therapist
+                    - Special Education Teacher
+                    - Psychologist
+                    - Psychiatrist
+                    - Counselor
+                    - Social Worker
+                    - ABA Therapist
+                    - Music Therapist
+                    - Art Therapist
+                    - Dance Therapist
+                    - Recreational Therapist
+                    - Nutritionist
+                    - Other
+                  price:
+                    type: number
+                    multipleOf: 0.01
+                    maximum: 100000000
+                    minimum: -100000000
+                  location:
+                    type: string
+                    maxLength: 100
+                  user:
+                    properties:
+                      id:
+                        type: integer
+                        readOnly: true
+                      username:
+                        type: string
+                        description: Required. 150 characters or fewer. Letters, digits
+                          and @/./+/-/_ only.
+                        pattern: ^[\w.@+-]+\Z
+                        maxLength: 150
+                      email:
+                        type: string
+                        format: email
+                        maxLength: 254
+                      password:
+                        type: string
+                        maxLength: 128
+                      role:
+                        enum:
+                        - CL
+                        - TH
+                    required:
+                    - username
+                    - password
+                    - role
+                    type: object
+                    readOnly: true
+          description: ''
+  /api/v1/logout/:
+    post:
+      operationId: logoutDefaultProfile
+      description: function logs out the user
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id005
+              properties: {}
+          application/x-www-form-urlencoded:
+            schema: *id005
+          multipart/form-data:
+            schema: *id005
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties: {}
+          description: ''
+  /api-token-auth/:
+    post:
+      operationId: CreateObtainAuthToken
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/v1/delete/:
+    delete:
+      operationId: delete_profileDefaultProfile
+      description: function deletes the user and their profile
+      parameters: []
+      responses:
+        '204':
+          description: ''

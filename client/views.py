@@ -11,8 +11,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from django.shortcuts import redirect
 from rest_framework.exceptions import NotFound
-from .models import ClientUser, ClientProfile, TherapistProfile
-from .serializers import ClientUserSerializer, ClientProfileSerializer, TherapistProfileSerializer, LoginSerializer, DeleteProfileSerializer
+from .models import ClientUser, ClientProfile, TherapistProfile, Appointments
+from .serializers import ClientUserSerializer, ClientProfileSerializer, TherapistProfileSerializer, LoginSerializer, DefaultProfileSerializer, AppointmentSerializer
 
 User = get_user_model()
 
@@ -68,7 +68,7 @@ class LogoutViewset(viewsets.GenericViewSet):
     """
     custom logout
     """
-    serializer_class = DeleteProfileSerializer
+    serializer_class = DefaultProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=False, methods=['post'])
@@ -90,18 +90,18 @@ class UpdateProfileViewset(viewsets.GenericViewSet):
         we overide serialiser class to get the correct serializer
         """
         try:
-            user = self.request.user 
-            # Determine which profile serializer to use based on user role
-            if user.role == 'CL':
-                serializer_class = ClientProfileSerializer
-            elif user.role == 'TH':
-                serializer_class = TherapistProfileSerializer
-            else:
-                raise AssertionError("User role not recognized")
-            return serializer_class
+            user = self.request.user
+            
         except AttributeError:
-            raise NotFound('User role not found')
-    
+            return DefaultProfileSerializer
+        if user.role == 'CL':
+            serializer_class = ClientProfileSerializer
+        elif user.role == 'TH':
+            serializer_class = TherapistProfileSerializer
+        else:
+            raise AssertionError("User role not recognized")
+        return serializer_class
+            
     @action(detail=False, methods=['post'])
     def update_profile(self, request):
         """
@@ -162,13 +162,15 @@ class ListProfilesViewset(viewsets.GenericViewSet):
         """
         try:
             user = self.request.user
-            if user.role == ClientUser.Role.CLIENT:
-                return TherapistProfileSerializer
-            elif user.role == ClientUser.Role.THERA:
-                return ClientProfileSerializer
-            else:
-                raise NotFound('User role not found')
+            
         except AttributeError:
+            return DefaultProfileSerializer
+        
+        if user.role == ClientUser.Role.CLIENT:
+            return TherapistProfileSerializer
+        elif user.role == ClientUser.Role.THERA:
+            return ClientProfileSerializer
+        else:
             raise NotFound('User role not found')
 
 class DetailListViewset(viewsets.GenericViewSet):
@@ -205,7 +207,11 @@ class DetailListViewset(viewsets.GenericViewSet):
         """
         returns the correct serializer based on the user role
         """
-        user = self.request.user
+        try:
+            user = self.request.user
+            
+        except AttributeError:
+            return DefaultProfileSerializer
         if user.role == ClientUser.Role.CLIENT:
             return ClientProfileSerializer
         elif user.role == ClientUser.Role.THERA:
@@ -219,7 +225,7 @@ class DeleteProfileViewset(viewsets.GenericViewSet):
     """
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = DeleteProfileSerializer    
+    serializer_class = DefaultProfileSerializer    
 
     def get_queryset(self):
         """
@@ -252,3 +258,26 @@ class DeleteProfileViewset(viewsets.GenericViewSet):
             return Response({"detail": "Profile and user deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class AppointmentViewset(viewsets.GenericViewSet):
+    """
+    Handles setting up of appointments
+    """
+    authentication_classes = [authentication.TokenAuthentication]
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Appointments.objects.all()
+
+class TherapistProfileViewSet(viewsets.ModelViewSet):
+    queryset = TherapistProfile.objects.all()
+    serializer_class = TherapistProfileSerializer
+
+    @action(detail=True, methods=['post'])
+    def respond_to_appointment(self, request, pk=None):
+        therapist = self.get_object()
+        appointment_id = request.data.get('appointment_id')
+        response = request.data.get('response')
+
+        therapist.respond_to_appointment(appointment_id, response)
+
+        return Response({"detail": "Appointment Approved"}, status=status.HTTP_200_OK)

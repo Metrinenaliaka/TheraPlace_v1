@@ -2,6 +2,7 @@
 This module contains the models for the client app
 """
 from django.db import models
+from django.core.mail import send_mail
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
@@ -121,6 +122,46 @@ class TherapistProfile(models.Model):
     location = models.CharField(max_length=100, default='')
     therapist = models.OneToOneField(ClientUser, on_delete=models.CASCADE, primary_key=True)
 
+    def __str__(self):
+        """
+        This function returns the username of the client
+        """
+        return self.therapist.username
+    
+    def respond_to_appointment(self, appointment_id, response):
+        appointment = Appointments.objects.get(id=appointment_id)
+        if response == 'approve':
+            appointment.status = 'Approved'
+            # Send email to client
+            client_email_subject = 'Appointment Approved'
+            client_email_message = f'Your appointment on {appointment.date} at {appointment.time} has been approved.'
+            send_mail(client_email_subject, client_email_message, settings.DEFAULT_FROM_EMAIL, [appointment.client.client.email])
+        elif response == 'decline':
+            appointment.status = 'Declined'
+            # Send email to client
+            client_email_subject = 'Appointment Declined'
+            client_email_message = f'Your appointment on {appointment.date} at {appointment.time} has been declined.'
+            send_mail(client_email_subject, client_email_message, settings.DEFAULT_FROM_EMAIL, [appointment.client.client.email])
+        appointment.save()
+class Appointments(models.Model):
+    """
+    setting up models for client appointments
+    """
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Declined', 'Declined'),
+    ]
+    client = models.ForeignKey(ClientProfile, on_delete=models.CASCADE)
+    therapist = models.ForeignKey(TherapistProfile, on_delete=models.CASCADE)
+    date = models.DateField()
+    time = models.TimeField()
+    reason = models.TextField(max_length=255, blank=True, null=True, default='')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
+
+    def __str__(self):
+        return f"{self.client.client.username} with {self.therapist.therapist.username} on {self.date} at {self.time}"
+
 
 @receiver(pre_save, sender=ClientUser)
 def create_user_profile(sender, instance, **kwargs):
@@ -141,3 +182,36 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     """
     if created:
         Token.objects.create(user=instance)
+
+@receiver(post_save, sender=Appointments)
+def send_appointment_email(sender, instance, created, **kwargs):
+    """
+    post save to send client booking email
+    """
+    if created:
+        # Construct email message
+        subject = 'Appointment Scheduled'
+        message = f'Your appointment on {instance.date} at {instance.time} with {instance.therapist.therapist.username} has been scheduled and is pending approval.'
+        from_email = settings.DEFAULT_FROM_EMAIL
+        to_email = instance.client.client.email
+
+        # Send email
+        send_mail(subject, message, from_email, [to_email])
+
+@receiver(post_save, sender=Appointments)
+def send_approval_email(sender, instance, created, **kwargs):
+    if not created and instance.status != 'Pending':
+        if instance.status == 'Approved':
+            # Send approval email to client
+            subject = 'Appointment Approved'
+            message = f'Your appointment on {instance.date} at {instance.time} with {instance.therapist.therapist.username} has been approved.'
+        elif instance.status == 'Declined':
+            # Send decline email to client
+            subject = 'Appointment Declined'
+            message = f'Your appointment on {instance.date} at {instance.time} with {instance.therapist.therapist.username} has been declined.'
+        
+        from_email = settings.DEFAULT_FROM_EMAIL
+        to_email = instance.client.client.email
+
+        # Send email
+        send_mail(subject, message, from_email, [to_email])
