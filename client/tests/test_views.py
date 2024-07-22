@@ -2,7 +2,6 @@
 Testing my views
 """
 from .test_setup import TestAuthSetUp, TestProfileSetUp
-from ..serializers import ClientProfileSerializer, TherapistProfileSerializer
 from ..views import UpdateProfileViewset, ListProfilesViewset, DetailListViewset, DeleteProfileViewset
 from ..models import ClientProfile, TherapistProfile
 

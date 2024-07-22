@@ -4,7 +4,6 @@ Definition of the test class for the setup of the application.
 from rest_framework.test import APITestCase, APIRequestFactory
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from rest_framework.authtoken.models import Token
 from faker import Faker
 from ..models import ClientProfile, TherapistProfile, Appointments, ClientUser
 
@@ -125,7 +124,7 @@ class TestModelsSetUp(APITestCase):
     """
     Tests for my models
     """
-    def SetUp(self):
+    def setUp(self):
         """
         my model setup data
         """

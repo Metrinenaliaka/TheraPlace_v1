@@ -26,12 +26,23 @@ class ClientUserSerializer(serializers.ModelSerializer):
     """
     This class is a serializer for the client user model
     """
+    password = serializers.CharField(write_only=True)
+    email = serializers.SerializerMethodField()
     class Meta:
         """
         This class defines the fields that are to be serialized
         """
         model = ClientUser
         fields = ['id', 'username', 'email', 'password', 'role',]
+
+    def get_email(self, obj):
+        """
+        This function truncates the email for safety
+        """
+        email = obj.email
+        local, domain = email.split('@')
+        truncated_email = f"{local[:2]}***@{domain[:]}"
+        return truncated_email
 
     def create(self, validated_data):
         """
