@@ -1,5 +1,5 @@
 # TheraPlace
-    *Personalised therapy for you*
+  _Personalised Therapy for You_
 ______
   
 ## ABOUT
@@ -14,8 +14,8 @@ this application hopes to get users connected for an inhouse therapy sessions, a
 
 ## TEAM
 ____
-This is a project I did alone with help from my peers and friends from other cohorts to finish off the specilaisation
-on [ALX AFRICA](https://www.alxafrica.com/) webstack portfolio project for Backend specialisation.
+This is a project I did alone with help from my peers and friends from other cohorts to finish off the specialization
+on [ALX AFRICA](https://www.alxafrica.com/) webstack portfolio project for Backend specialization.
 You can check me out on socials:
 - X - [Metrine Makana](https://x.com/makanametrine)
 - Linkedin - [Metrine Makana](https:/www.linkedin.com/in/metrine-makana/)
@@ -25,8 +25,23 @@ ____
 - You can access this project by cloning it using:
 ```
 https://github.com/Metrinenaliaka/TheraPlace_v1.git
+
 ```
-- On your terminal activate the virtual environment using `. ./venv/bin/activate`
+- navigate to the directory `cd TheraPlace_v1`
+- Create your virtual environment using `python -m venv name_of_env`
+
+- On your terminal activate the virtual environment using `. ./,name_of_env>/bin/activate`
+- Install dependencies `pip install -r requirements.txt`
+- create a `.env` file
+- Generate a SECRET KEY Using `secrets` on the python shell
+  1. Run the shell with `python manage.py shell`
+  2. `import secrets` then generate a key with `print(secrets.token_hex(24))`
+  3. Copy the key and store in the `.env` file as `SK=COPIED_KEY` replace the COPIED_KEY with the key you generated
+- Setting up email for `SMTP`
+  1. In the `.env` save an email that will help with the email notifications e.g `EMP=me@gmail.com`
+  2. In your gmail settings generate an APP Password and save in `.env` as `PS=my_app_password`
+- Run makemigrations with `manage.py makemigrations`
+- Run migrate with `manage.py migrate`
 - Then run `python manage.py runserver` to start the server on localhost
 
 after cloning you can use CLI or POSTMAN, here are the endpoints that can be used on another terminal with the server still running:
@@ -79,4 +94,6 @@ ______
 ______
 1. [Django Rest Framework](https://www.django-rest-framework.org/)
    I used it for writing the API's the authentication and also for Testing.
-
+2. [Python-Decouple](https://pypi.org/project/python-decouple/) I used for managing my .env
+3. [Faker](https://faker.readthedocs.io/en/master/) I used Faker to generate random data for testing
+4. [DRF-YASG](https://drf-yasg.readthedocs.io/en/stable/) I used this to create a dynamic API documentation availabe at `http://127.0.0.1:8000/swagger/`

@@ -84,6 +84,4 @@ class TherapistProfileSerializer(serializers.ModelSerializer):
         This class defines the fields that are to be serialized
         """
         model = TherapistProfile
-        fields = ['experience', 'description', 'occupation', 'price', 'location', 'user'] 
-
-
+        fields = ['experience', 'description', 'occupation', 'price', 'location', 'user']
