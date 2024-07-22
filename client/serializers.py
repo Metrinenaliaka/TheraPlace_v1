@@ -40,8 +40,11 @@ class ClientUserSerializer(serializers.ModelSerializer):
         This function truncates the email for safety
         """
         email = obj.email
-        local, domain = email.split('@')
-        truncated_email = f"{local[:2]}***@{domain[:]}"
+        if '@' in email:
+            local, domain = email.split('@')
+            truncated_email = f"{local[:2]}***@{domain[:]}"
+        else:
+            truncated_email = email
         return truncated_email
 
     def create(self, validated_data):
