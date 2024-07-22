@@ -142,4 +142,4 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMP')
 EMAIL_HOST_PASSWORD = config('PS')
-DEFAULT_FROM_EMAIL = 'metrinenam@gmail.com'
+DEFAULT_FROM_EMAIL = config('EMP')

@@ -191,12 +191,15 @@ def send_appointment_email(sender, instance, created, **kwargs):
     if created:
         # Construct email message
         subject = 'Appointment Scheduled'
-        message = f'Your appointment on {instance.date} at {instance.time} with {instance.therapist.therapist.username} has been scheduled and is pending approval.'
+        client_message = f'Your appointment on {instance.date} at {instance.time} with {instance.therapist.therapist.username} has been scheduled and is pending approval.'
+        thera_message = f'Your appointment on {instance.date} at {instance.time} with {instance.client.client.username} has been scheduled and is pending approval.'
         from_email = settings.DEFAULT_FROM_EMAIL
-        to_email = instance.client.client.email
+        client_email = instance.client.client.email
+        thera_email = instance.therapist.therapist.email
 
         # Send email
-        send_mail(subject, message, from_email, [to_email])
+        send_mail(subject, client_message, from_email, [client_email])
+        send_mail(subject, thera_message, from_email, [thera_email])
 
 @receiver(post_save, sender=Appointments)
 def send_approval_email(sender, instance, created, **kwargs):

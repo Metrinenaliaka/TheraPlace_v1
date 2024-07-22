@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from faker import Faker
-from ..models import ClientProfile, TherapistProfile
+from ..models import ClientProfile, TherapistProfile, Appointments, ClientUser
 
 class TestAuthSetUp(APITestCase):
     """
@@ -119,3 +119,46 @@ class TestProfileSetUp(APITestCase):
         tear down function
         """
         return super().tearDown()
+
+class TestModelsSetUp(APITestCase):
+
+    """
+    Tests for my models
+    """
+    def SetUp(self):
+        """
+        my model setup data
+        """
+        self.signup_url = reverse('register')
+        self.update_profile_url = reverse('update_profile')
+        self.fake = Faker()
+
+        self.role = self.fake.random_element(elements=('CL', 'TH'))
+        self.condition = self.fake.random_element(elements=('Celebral Palsy', 'Autism', 'Down Syndrome', 'ADHD', 'Hydrocephalus', 'Epilepsy', 'Developmental Delay'))
+        self.occupation = self.fake.random_element(elements=('Psychologist', 'Psychiatrist', 'Counselor', 'Occupational Therapist', 'Social Worker', 'Physiotherapist'))
+        self.location = self.fake.random_elements(elements=('nairobi', 'kakamega', 'kitui'))
+
+        self.data = {
+            'username': self.fake.user_name(),
+            'email': self.fake.email(),
+            'password': self.fake.password(),
+            'role': self.role
+        }
+        self.client_data = {
+            'age': self.fake.random_int(min=1, max=100),
+            'description': self.fake.text(),
+            'condition': self.condition
+        }
+        self.therapist_data = {
+            'experience': self.fake.random_int(min=1, max=100),
+            'description': self.fake.text(),
+            'occupation': self.occupation,
+            'price': self.fake.random_int(min=1, max=100),
+            'location': self.location
+        }
+
+        def tearDown(self):
+            """
+            tear down function
+            """
+            return super().tearDown()
