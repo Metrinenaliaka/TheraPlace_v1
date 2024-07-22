@@ -269,11 +269,17 @@ class AppointmentViewset(viewsets.GenericViewSet):
     queryset = Appointments.objects.all()
 
 class TherapistProfileViewSet(viewsets.ModelViewSet):
+    """
+    Helps with the response to a therapist appointment
+    """
     queryset = TherapistProfile.objects.all()
     serializer_class = TherapistProfileSerializer
 
     @action(detail=True, methods=['post'])
     def respond_to_appointment(self, request, pk=None):
+        """
+        This function responds to an appointment
+        """
         therapist = self.get_object()
         appointment_id = request.data.get('appointment_id')
         response = request.data.get('response')
