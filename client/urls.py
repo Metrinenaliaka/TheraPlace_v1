@@ -11,6 +11,7 @@ urlpatterns = [
     path('list-profiles/', views.ListProfilesViewset.as_view({'get': 'list_profiles'}), name='list_profiles'),
     path('profile/<int:pk>/', views.DetailListViewset.as_view({'get': 'detail_list'}), name='detail_list'),
     path('delete/', views.DeleteProfileViewset.as_view({'delete': 'delete_profile'}), name='delete_profile'),
-    path('approve_app/', views.TherapistProfileViewSet.as_view({'post': 'respond_to_appointment'}), name='approve_app'),
+    path('set-appointment/', views.AppointmentViewset.as_view({'post': 'set_appointment'}), name='set_appointment'),
+    path('approve-app/<int:pk>/', views.TherapistProfileViewSet.as_view({'post': 'respond_to_appointment'}), name='approve_app'),
     path('logout/', views.LogoutViewset.as_view({'post': 'logout'}), name='logout'),
 ]

@@ -268,12 +268,23 @@ class AppointmentViewset(viewsets.GenericViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Appointments.objects.all()
 
+    @action(detail=False, methods=['post'])
+    def set_appointment(self, request):
+        """
+        function sets up an appointment
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 class TherapistProfileViewSet(viewsets.ModelViewSet):
     """
     Helps with the response to a therapist appointment
     """
     queryset = TherapistProfile.objects.all()
     serializer_class = TherapistProfileSerializer
+    lookup_field = 'pk'
 
     @action(detail=True, methods=['post'])
     def respond_to_appointment(self, request, pk=None):
@@ -283,7 +294,19 @@ class TherapistProfileViewSet(viewsets.ModelViewSet):
         therapist = self.get_object()
         appointment_id = request.data.get('appointment_id')
         response = request.data.get('response')
+    
+        if not appointment_id or not response:
+            return Response({"detail": "Appointment ID and response are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Retrieve the appointment
+            appointment = Appointments.objects.get(id=appointment_id)
+        except Appointments.DoesNotExist:
+            return Response({"detail": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
+        if appointment.therapist.therapist.pk != therapist.pk:
+            return Response({"detail": "This appointment does not belong to this therapist"}, status=status.HTTP_403_FORBIDDEN)
 
         therapist.respond_to_appointment(appointment_id, response)
 
-        return Response({"detail": "Appointment Approved"}, status=status.HTTP_200_OK)
+        return Response({"detail": "Appointment Approved/Declined"}, status=status.HTTP_200_OK)
+    

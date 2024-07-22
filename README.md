@@ -83,6 +83,17 @@ ______
   curl -X GET -H "Content-Type: application/json" -H "Authorization: Token 6146371287d38683a0b5b8bee6955dba44894374" http://127.0.0.1:8000/api/v1/profile/5/
   ```
   here the user decides to list their own data, you need a PK which was generated when one registered
+- Set an appointment 
+  ```
+  curl -X POST -H "Content-Type: application/json" -H "Authorization: Token f5a1718efa270c3e4eee76e8198f1263137bc685" -d '{ "client": "5", "therapist": "8", "date": "2024-07-24", "time": "18:00:00", "reason": "another one" }' http://127.0.0.1:8000/api/v1/set-appointment/
+  ```
+  the Token is the Clients token generated when they logged in, Client is the clients user id, therapist is the chosen therapists user id
+- Approve/decline an appointment by therapist
+  ```
+  curl -X POST -H "Content-Type: application/json" -H "Authorization: Token b8e85bdcf1f6209fd0a4dfd0ec6540e8d3576725" -d '{ "appointment_id": "6", "response": "approved" }' http://127.0.0.1:8000/api/v1/approve-app/8/
+  ```
+  here the Token is the therapists token generated when they logged in, appointment_id is the id instance of the appointment set by client, response can be approved or declined
+  
 
 - Deleting a profile
   ```
