@@ -77,7 +77,7 @@ class ClientProfile(models.Model):
         """
         This function returns the username of the client
         """
-        return self.client.username            
+        return self.client.username
 
 class Therapist(ClientUser):
     """
@@ -92,7 +92,7 @@ class Therapist(ClientUser):
         verbose_name = 'Therapist'
         verbose_name_plural = 'Therapists'
 
-    
+
 class TherapistProfile(models.Model):
     """
     This class is a model for the therapist profile
@@ -127,21 +127,28 @@ class TherapistProfile(models.Model):
         This function returns the username of the client
         """
         return self.therapist.username
-    
+
     def respond_to_appointment(self, appointment_id, response):
+        """
+        Function used to respond to appointments
+        """
         appointment = Appointments.objects.get(id=appointment_id)
         if response == 'approve':
             appointment.status = 'Approved'
             # Send email to client
             client_email_subject = 'Appointment Approved'
-            client_email_message = f'Your appointment on {appointment.date} at {appointment.time} has been approved.'
-            send_mail(client_email_subject, client_email_message, settings.DEFAULT_FROM_EMAIL, [appointment.client.client.email])
+            client_email_message = f'Your appointment on {appointment.date} at\
+                {appointment.time} has been approved.'
+            send_mail(client_email_subject, client_email_message, settings.DEFAULT_FROM_EMAIL,
+                      [appointment.client.client.email])
         elif response == 'decline':
             appointment.status = 'Declined'
             # Send email to client
             client_email_subject = 'Appointment Declined'
-            client_email_message = f'Your appointment on {appointment.date} at {appointment.time} has been declined.'
-            send_mail(client_email_subject, client_email_message, settings.DEFAULT_FROM_EMAIL, [appointment.client.client.email])
+            client_email_message = f'Your appointment on {appointment.date} at {appointment.time}\
+                has been declined.'
+            send_mail(client_email_subject, client_email_message, settings.DEFAULT_FROM_EMAIL,\
+                      [appointment.client.client.email])
         appointment.save()
 class Appointments(models.Model):
     """
@@ -160,7 +167,8 @@ class Appointments(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
 
     def __str__(self):
-        return f"{self.client.client.username} with {self.therapist.therapist.username} on {self.date} at {self.time}"
+        return f"{self.client.client.username} with {self.therapist.therapist.username} on\
+            {self.date} at {self.time}"
 
 
 @receiver(pre_save, sender=ClientUser)
@@ -191,8 +199,10 @@ def send_appointment_email(sender, instance, created, **kwargs):
     if created:
         # Construct email message
         subject = 'Appointment Scheduled'
-        client_message = f'Your appointment on {instance.date} at {instance.time} with {instance.therapist.therapist.username} has been scheduled and is pending approval.'
-        thera_message = f'Your appointment on {instance.date} at {instance.time} with {instance.client.client.username} has been scheduled and is pending approval.'
+        client_message = f'Your appointment on {instance.date} at {instance.time} with\
+            {instance.therapist.therapist.username} has been scheduled and is pending approval.'
+        thera_message = f'Your appointment on {instance.date} at {instance.time}\
+            with {instance.client.client.username} has been scheduled and is pending approval.'
         from_email = settings.DEFAULT_FROM_EMAIL
         client_email = instance.client.client.email
         thera_email = instance.therapist.therapist.email
@@ -207,12 +217,14 @@ def send_approval_email(sender, instance, created, **kwargs):
         if instance.status == 'Approved':
             # Send approval email to client
             subject = 'Appointment Approved'
-            message = f'Your appointment on {instance.date} at {instance.time} with {instance.therapist.therapist.username} has been approved.'
+            message = f'Your appointment on {instance.date} at {instance.time} with\
+                {instance.therapist.therapist.username} has been approved.'
         elif instance.status == 'Declined':
             # Send decline email to client
             subject = 'Appointment Declined'
-            message = f'Your appointment on {instance.date} at {instance.time} with {instance.therapist.therapist.username} has been declined.'
-        
+            message = f'Your appointment on {instance.date} at {instance.time}\
+                with {instance.therapist.therapist.username} has been declined.'
+
         from_email = settings.DEFAULT_FROM_EMAIL
         to_email = instance.client.client.email
 

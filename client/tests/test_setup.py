@@ -133,8 +133,10 @@ class TestModelsSetUp(APITestCase):
         self.fake = Faker()
 
         self.role = self.fake.random_element(elements=('CL', 'TH'))
-        self.condition = self.fake.random_element(elements=('Celebral Palsy', 'Autism', 'Down Syndrome', 'ADHD', 'Hydrocephalus', 'Epilepsy', 'Developmental Delay'))
-        self.occupation = self.fake.random_element(elements=('Psychologist', 'Psychiatrist', 'Counselor', 'Occupational Therapist', 'Social Worker', 'Physiotherapist'))
+        self.condition = self.fake.random_element(elements=('Celebral Palsy','Autism', 'Down Syndrome', 'ADHD',
+                                                            'Hydrocephalus', 'Epilepsy', 'Developmental Delay'))
+        self.occupation = self.fake.random_element(elements=('Psychologist', 'Psychiatrist', 'Counselor',
+                                                             'Occupational Therapist', 'Social Worker', 'Physiotherapist'))
         self.location = self.fake.random_elements(elements=('nairobi', 'kakamega', 'kitui'))
 
         self.data = {

@@ -92,8 +92,8 @@ ______
   ```
   curl -X POST -H "Content-Type: application/json" -H "Authorization: Token b8e85bdcf1f6209fd0a4dfd0ec6540e8d3576725" -d '{ "appointment_id": "6", "response": "approved" }' http://127.0.0.1:8000/api/v1/approve-app/8/
   ```
-  here the Token is the therapists token generated when they logged in, appointment_id is the id instance of the appointment set by client, response can be approved or declined
-  
+  here the Token is the therapists token generated when they logged in, appointment_id is the id instance of the appointment set by client, response can be approved or declined. Then int at the end of the url is the therapists pk
+
 
 - Deleting a profile
   ```

@@ -18,7 +18,13 @@ class DefaultProfileSerializer(serializers.Serializer):
     pass
 
 class AppointmentSerializer(serializers.ModelSerializer):
+    """
+    handles serializing/deserializing of the appointments model
+    """
     class Meta:
+        """
+        Metadata
+        """
         model = Appointments
         fields = ['id', 'client', 'therapist', 'date', 'time', 'reason']
 
@@ -81,7 +87,7 @@ class TherapistProfileSerializer(serializers.ModelSerializer):
     This class is a serializer for the therapist profile model
     """
     user = ClientUserSerializer(source='therapist', read_only=True)
-   
+
     def update(self, instance, validated_data):
         """
         This function updates the therapist profile
@@ -92,7 +98,7 @@ class TherapistProfileSerializer(serializers.ModelSerializer):
         instance.price = validated_data.get('price', instance.price)
         instance.location = validated_data.get('location', instance.location)
         instance.save()
-        return instance    
+        return instance
     class Meta:
         """
         This class defines the fields that are to be serialized

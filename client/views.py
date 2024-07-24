@@ -19,7 +19,7 @@ User = get_user_model()
 class LoginViewset(viewsets.GenericViewSet):
     """
     Handles login and potentially retrieves user profile data.
-    """    
+    """
     permission_classes = [permissions.AllowAny]
     serializer_class = LoginSerializer
 
@@ -31,7 +31,7 @@ class LoginViewset(viewsets.GenericViewSet):
         # validation the input data
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         # Extract validated data
         username = serializer.validated_data['username']
         password = serializer.validated_data['password']
@@ -91,7 +91,7 @@ class UpdateProfileViewset(viewsets.GenericViewSet):
         """
         try:
             user = self.request.user
-            
+
         except AttributeError:
             return DefaultProfileSerializer
         if user.role == 'CL':
@@ -101,7 +101,7 @@ class UpdateProfileViewset(viewsets.GenericViewSet):
         else:
             raise AssertionError("User role not recognized")
         return serializer_class
-            
+
     @action(detail=False, methods=['post'])
     def update_profile(self, request):
         """
@@ -122,7 +122,7 @@ class UpdateProfileViewset(viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
-        
+
 
 class ListProfilesViewset(viewsets.GenericViewSet):
     """
@@ -162,10 +162,10 @@ class ListProfilesViewset(viewsets.GenericViewSet):
         """
         try:
             user = self.request.user
-            
+
         except AttributeError:
             return DefaultProfileSerializer
-        
+
         if user.role == ClientUser.Role.CLIENT:
             return TherapistProfileSerializer
         elif user.role == ClientUser.Role.THERA:
@@ -209,7 +209,7 @@ class DetailListViewset(viewsets.GenericViewSet):
         """
         try:
             user = self.request.user
-            
+
         except AttributeError:
             return DefaultProfileSerializer
         if user.role == ClientUser.Role.CLIENT:
@@ -225,7 +225,7 @@ class DeleteProfileViewset(viewsets.GenericViewSet):
     """
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = DefaultProfileSerializer    
+    serializer_class = DefaultProfileSerializer
 
     def get_queryset(self):
         """
@@ -250,12 +250,14 @@ class DeleteProfileViewset(viewsets.GenericViewSet):
         elif user.role == ClientUser.Role.THERA:
             profile = TherapistProfile.objects.filter(therapist=user).first()
         else:
-            return Response({"detail": "User role not recognized"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "User role not recognized"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         if profile:
             profile.delete()
             user.delete()
-            return Response({"detail": "Profile and user deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"detail": "Profile and user deleted successfully"},
+                            status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"detail": "Profile not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -294,9 +296,10 @@ class TherapistProfileViewSet(viewsets.ModelViewSet):
         therapist = self.get_object()
         appointment_id = request.data.get('appointment_id')
         response = request.data.get('response')
-    
+
         if not appointment_id or not response:
-            return Response({"detail": "Appointment ID and response are required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "Appointment ID and response are required"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Retrieve the appointment
@@ -304,9 +307,9 @@ class TherapistProfileViewSet(viewsets.ModelViewSet):
         except Appointments.DoesNotExist:
             return Response({"detail": "Appointment not found"}, status=status.HTTP_404_NOT_FOUND)
         if appointment.therapist.therapist.pk != therapist.pk:
-            return Response({"detail": "This appointment does not belong to this therapist"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "This appointment does not belong to this therapist"},
+                            status=status.HTTP_403_FORBIDDEN)
 
         therapist.respond_to_appointment(appointment_id, response)
 
         return Response({"detail": "Appointment Approved/Declined"}, status=status.HTTP_200_OK)
-    
